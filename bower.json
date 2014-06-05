@@ -1,0 +1,11 @@
+{
+  "name": "lucky7",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "~3.0.3",
+    "modernizr": "~2.6.2",
+    "jquery": "~1.11.0",
+    "pixi": "~1.5.3"
+  },
+  "devDependencies": {}
+}
