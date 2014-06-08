@@ -1,4 +1,4 @@
-var loader = new CANDLE.LOADER('/images/',['atlas.json','lcd.xml']);
+var loader = new CANDLE.LOADER('images/',['atlas.json','lcd.xml']);
 
 var lucky7 = new CANDLE.GAME(loader,setup,update);
 
