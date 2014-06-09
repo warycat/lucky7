@@ -230,6 +230,7 @@ function setup(){
       for(var j=0;j<3;j++){
         if(j === 0){
           lucky7.symbos[i][j].visible = true;
+          lucky7.symbos[i][j].gotoAndStop(0);
         }
       }
     }
@@ -392,6 +393,7 @@ function update(){
   }
 
   function idle(){
+    lucky7.balance = lucky7.end;
     rotateTexts();
   }
 
@@ -418,7 +420,6 @@ function cheet(){
   var row1 = Math.floor(Math.random() * 7);
   var row2 = Math.floor(Math.random() * 7);
   var row3 = Math.floor(Math.random() * 7);
-
 
   //calcualte the result cents
   var win = 0;
@@ -460,4 +461,6 @@ function cheet(){
     cash: cash,
     payline:[(6-row1),(6-row2),(6-row3)]
   };
+
+
 }
