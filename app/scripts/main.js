@@ -16,8 +16,12 @@ function setup(){
   setupText();
   setupWindow();
   init();
+  setupAudio();
 
-
+  function setupAudio(){
+    var audio = document.getElementById('audio');
+    lucky7.audio = new AudioSprite(audio, spriteData);
+  }
 
   function setupKeybaord(){
     lucky7.input.addKey(CANDLE.kSpace,function(){
@@ -209,7 +213,7 @@ function setup(){
       }
       setTimeout(spinning,500);
     }else{
-      playSprite('reels');
+      lucky7.audio.play('reels');
       for(i = 0;i<3;i++){
         for(j= 0;j<3;j++){
           lucky7.symbos[i][j].visible = false;
@@ -222,7 +226,7 @@ function setup(){
   }
 
   function stop1(){
-    playSprite('stop');
+    lucky7.audio.play('stop');
     lucky7.state = 'stop1';
     console.log('stop1');
     lucky7.reels[0].visible = false;
@@ -234,11 +238,11 @@ function setup(){
         }
       }
     }
-    setTimeout(stop2,500);
+    setTimeout(stop2,1000);
   }
 
   function stop2(){
-    playSprite('stop');
+    lucky7.audio.play('stop');
     lucky7.state = 'stop2';
     lucky7.reels[1].visible = false;
     for(var i=0;i<3;i++){
@@ -249,11 +253,11 @@ function setup(){
         }
       }
     }
-    setTimeout(stop3,500);
+    setTimeout(stop3,1000);
   }
 
   function stop3(){
-    playSprite('stop');
+    lucky7.audio.play('stop');
     lucky7.state = 'stop3';
     lucky7.reels[2].visible = false;
     for(var i=0;i<3;i++){
@@ -264,7 +268,7 @@ function setup(){
         }
       }
     }
-    setTimeout(money,500);
+    setTimeout(money,1000);
   }
 
   function money(){
@@ -294,7 +298,7 @@ function setup(){
     if(lucky7.outcome.win === 0){
       setTimeout(idle, 500);
     }else{
-      playSprite('win');
+      lucky7.audio.play('win');
       console.log(lucky7.outcome.win);
       setTimeout(idle, 9000);
     }
@@ -309,15 +313,15 @@ function setup(){
     if(lucky7.outcome.win <= 100 && lucky7.outcome.win > 0){
       lucky7.texts[0].setText('SMALL WIN ' + lucky7.outcome.win);
       lucky7.texts[1].setText('BALANCE ' + lucky7.balance);
-      playSprite('smallWin');
+      lucky7.audio.play('smallWin');
     }else if(lucky7.outcome.win > 100){
       lucky7.texts[0].setText('BIG WIN ' + lucky7.outcome.win);
       lucky7.texts[1].setText('BALANCE ' + lucky7.balance);
-      playSprite('bigWin');
+      lucky7.audio.play('bigWin');
     }else{
       lucky7.texts[0].setText('NO MONEY' );
       lucky7.texts[1].setText('BALANCE ' + lucky7.balance);
-      playSprite('noMoney');
+      lucky7.audio.play('noMoney');
     }
   }
 
