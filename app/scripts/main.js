@@ -15,27 +15,32 @@ function setup(){
   setupSymbos();
   setupText();
   setupWindow();
-
   init();
+
+
 
   function setupKeybaord(){
     lucky7.input.addKey(CANDLE.kSpace,function(){
-      switch(lucky7.state){
-      case 'init':
-      case 'idle':
-        bet();
-        spinning();
-        break;
-      case 'spinning':
-      case 'stop1':
-      case 'stop2':
-      case 'stop3':
-      case 'money':
-        break;
-      default:
-        console.log('error');
-      }
+      respond();
     });
+  }
+
+  function respond(){
+    switch(lucky7.state){
+    case 'init':
+    case 'idle':
+      bet();
+      spinning();
+      break;
+    case 'spinning':
+    case 'stop1':
+    case 'stop2':
+    case 'stop3':
+    case 'money':
+      break;
+    default:
+      console.log('error');
+    }
   }
 
   function setupBackground(){
@@ -91,6 +96,10 @@ function setup(){
   function setupWindow(){
     var background = lucky7.background;
     var window = new PIXI.Sprite.fromFrame('window.png');
+    window.setInteractive(true);
+    window.tap = window.click = function(){
+      respond();
+    };
     window.x = 143;
     window.y = 118;
     background.addChild(window);
@@ -139,7 +148,7 @@ function setup(){
   function setupText(){
     var mask = new PIXI.Graphics();
     mask.beginFill(0);
-    mask.drawRect(50,200,390,500);
+    mask.drawRect(50,450,390,40);
     lucky7.stage.addChild(mask);
     console.log(PIXI.BitmapText.fonts);
     var text0 = new PIXI.BitmapText("", {font: "28px LCD", align: "right"});
@@ -157,6 +166,7 @@ function setup(){
 
   function init(){
     lucky7.state = 'init';
+    lucky7.balance = 1000;
     var initSymbos = ['seven','seven','seven','lucky','lucky','lucky','cherry','cherry','cherry'];
     for(var i = 0;i<3;i++){
       for(var j= 0;j<3;j++){
@@ -171,17 +181,11 @@ function setup(){
   }
 
   function spinning(){
+    var i,j;
     lucky7.state = 'spinning';
-    for(var i=0;i<3;i++){
+    for(i=0;i<3;i++){
       lucky7.reels[i].visible = true;
       lucky7.reels[i].gotoAndPlay(i*2);
-    }
-    for(i = 0;i<3;i++){
-      for(var j= 0;j<3;j++){
-        lucky7.symbos[i][j].visible = false;
-        var name = symboNames[(lucky7.outcome.payline[j] - i + 8) % 7];
-        setToSymbo.call(lucky7.symbos[i][j],name,'on');
-      }
     }
     for(i = 0;i<3;i++){
       lucky7.reels[i].visible = true;
@@ -191,10 +195,34 @@ function setup(){
     lucky7.texts[0].flashSpeed = 0.08;
     lucky7.texts[0].flash = 0;
     lucky7.texts[1].x = 180 + 350;
-    setTimeout(stop1,1000);
+    lucky7.texts[1].setText('GOOD LUCK');
+    lucky7.texts[1].flashSpeed = 0.08;
+    lucky7.texts[1].flash = 0;
+
+
+
+    if(!lucky7.outcome){
+      for(i = 0;i<3;i++){
+        for(j= 0;j<3;j++){
+          lucky7.symbos[i][j].visible = false;
+        }
+      }
+      setTimeout(spinning,500);
+    }else{
+      playSprite('reels');
+      for(i = 0;i<3;i++){
+        for(j= 0;j<3;j++){
+          lucky7.symbos[i][j].visible = false;
+          var name = symboNames[(lucky7.outcome.payline[j] - i + 8) % 7];
+          setToSymbo.call(lucky7.symbos[i][j],name,'on');
+        }
+      }
+      setTimeout(stop1,4000);
+    }
   }
 
   function stop1(){
+    playSprite('stop');
     lucky7.state = 'stop1';
     console.log('stop1');
     lucky7.reels[0].visible = false;
@@ -209,6 +237,7 @@ function setup(){
   }
 
   function stop2(){
+    playSprite('stop');
     lucky7.state = 'stop2';
     lucky7.reels[1].visible = false;
     for(var i=0;i<3;i++){
@@ -223,6 +252,7 @@ function setup(){
   }
 
   function stop3(){
+    playSprite('stop');
     lucky7.state = 'stop3';
     lucky7.reels[2].visible = false;
     for(var i=0;i<3;i++){
@@ -233,7 +263,7 @@ function setup(){
         }
       }
     }
-    setTimeout(money,50);
+    setTimeout(money,500);
   }
 
   function money(){
@@ -241,27 +271,66 @@ function setup(){
     for(var i=0;i<3;i++){
       for(var j=0;j<3;j++){
         if(i === 1){
-          lucky7.symbos[i][j].gotoAndPlay(1);
+          if(lucky7.outcome.win !== 0)
+            lucky7.symbos[i][j].gotoAndPlay(1);
+          else
+            lucky7.symbos[i][j].gotoAndStop(1);
         }else{
           lucky7.symbos[i][j].gotoAndStop(1);
         }
       }
     }
-    setTimeout(idle,500);
+    lucky7.texts[0].visible = true;
+    lucky7.texts[0].setText('WIN: ' + lucky7.outcome.win);
+    lucky7.texts[0].x = 50;
+
+    lucky7.texts[1].visible = true;
+    lucky7.texts[1].setText('BALANCE: ' + lucky7.balance);
+    lucky7.texts[1].x = 200;
+
+    lucky7.start = lucky7.balance;
+    lucky7.end = lucky7.balance + lucky7.outcome.win;
+    if(lucky7.outcome.win === 0){
+      setTimeout(idle, 500);
+    }else{
+      playSprite('win');
+      console.log(lucky7.outcome.win);
+      setTimeout(idle, 9000);
+    }
   }
 
   function idle(){
     lucky7.state = 'idle';
-    lucky7.texts[0].setText('TAP TO SPIN');
-    lucky7.texts[1].setText('TAP TO SPIN');
+    lucky7.texts[0].visible = true;
+    lucky7.texts[1].visible = true;
+    lucky7.texts[0].x = 100;
+    lucky7.texts[1].x = 450;
+    if(lucky7.outcome.win <= 100 && lucky7.outcome.win > 0){
+      lucky7.texts[0].setText('SMALL WIN ' + lucky7.outcome.win);
+      lucky7.texts[1].setText('BALANCE ' + lucky7.balance);
+      playSprite('smallWin');
+    }else if(lucky7.outcome.win > 100){
+      lucky7.texts[0].setText('BIG WIN ' + lucky7.outcome.win);
+      lucky7.texts[1].setText('BALANCE ' + lucky7.balance);
+      playSprite('bigWin');
+    }else{
+      lucky7.texts[0].setText('NO MONEY' );
+      lucky7.texts[1].setText('BALANCE ' + lucky7.balance);
+      playSprite('noMoney');
+    }
   }
 
   function bet(){
-    lucky7.outcome = {"win":"1000","payline":[4,5,6]};
+    lucky7.outcome = null;
+    lucky7.balance -= 10;
+    lucky7.balance = (lucky7.balance < 0) ? 0 : lucky7.balance;
+    lucky7.outcome = cheet();
+    // $.getJSON('http://localhost:3000/bet?id=larry&&coin=10&&bet=1',{cache:false},function(data){
+    //   lucky7.outcome = data;
+    //   console.log(lucky7.outcome);
+    // });
   }
 }
-
-
 
 function update(){
   switch(lucky7.state){
@@ -297,7 +366,7 @@ function update(){
   function spinning(n){
     lucky7.texts[0].flash += lucky7.texts[0].flashSpeed;
     var round = Math.floor(lucky7.texts[0].flash);
-    lucky7.texts[0].visible = round % 2 ;
+    lucky7.texts[0].visible = round % 2 === 0;
   }
 
   function stop1(){
@@ -316,6 +385,9 @@ function update(){
   }
 
   function money(){
+    lucky7.balance = lucky7.balance + lucky7.outcome.win / 500;
+    lucky7.balance = (lucky7.balance > lucky7.end) ? lucky7.end : lucky7.balance;
+    lucky7.texts[1].setText('BALANCE: ' + Math.floor(lucky7.balance));
     console.log('money');
   }
 
@@ -332,5 +404,60 @@ function update(){
       }
     }
   }
+}
 
+function cheet(){
+  var id = 'larry';
+  var coin = 10;
+  var bet = 1;
+
+  //calculate cash depending on parameters
+  var cash = coin*bet;
+
+  //random generate row1, row2 and row3: integer: 0~6
+  var row1 = Math.floor(Math.random() * 7);
+  var row2 = Math.floor(Math.random() * 7);
+  var row3 = Math.floor(Math.random() * 7);
+
+
+  //calcualte the result cents
+  var win = 0;
+
+  //any 1 cherry
+  if(row1 === 4 || row2 === 4 || row3 === 4) { win =  Math.floor (2 * cash );}
+
+  //3 any bar
+  if(( 1 <= row1 && row1 <=3 ) && ( 1 <= row2 && row2 <=3 ) && ( 1 <= row3 && row3 <=3 ) ) { win =   Math.floor (3 * cash);}
+
+  //any 2 cherry
+  if(row1 === 4 && row2 === 4 ) { win =  Math.floor (10 * cash );}
+  if(row1 === 4 && row3 === 4 ) { win =  Math.floor (10 * cash );}
+  if(row2 === 4 && row3 === 4 ) { win =  Math.floor (10 * cash );}
+
+  
+  //3  bar 1, 2, 3
+  if(row1 === 1 && row2 === 1 && row3 === 1) { win =  Math.floor (20 * cash );}
+  if(row1 === 2 && row2 === 2 && row3 === 2) { win =  Math.floor (50 * cash );}
+  if(row1 === 3 && row2 === 3 && row3 === 3) { win =  Math.floor (100 * cash );}
+
+  //3  cherries
+  if(row1 === 4 && row2 === 4 && row3 === 4) { win =  Math.floor (150 * cash );}
+
+  //3  luky 7
+  if(row1 === 5 && row2 === 5 && row3 === 5) { win =  Math.floor (250 * cash );}
+
+  //3  7
+  if(row1 === 6 && row2 === 6 && row3 === 6) { win =  Math.floor (1000 * cash );}
+
+  //3  7  and bet = 3
+  if(row1 === 6 && row2 === 6 && row3 === 6 && bet === 3) { win =  Math.floor (5000 * cash );}
+  
+  return {
+    id: id,
+    win: win,
+    coin: coin,
+    bet: bet,
+    cash: cash,
+    payline:[(6-row1),(6-row2),(6-row3)]
+  };
 }
